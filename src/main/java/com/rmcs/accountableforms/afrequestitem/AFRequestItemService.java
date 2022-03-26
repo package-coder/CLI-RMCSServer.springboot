@@ -22,12 +22,12 @@ public class AFRequestItemService {
     }
 
     public AFRequestItem getRequestItem(UUID requestItemId) {
-        Optional<AFRequestItem> afTypeOptional = afRequestItemRepository.findById(requestItemId);
-        boolean isEmpty = afTypeOptional.isEmpty();
+        Optional<AFRequestItem> requestItemOptional = afRequestItemRepository.findById(requestItemId);
+        boolean isEmpty = requestItemOptional.isEmpty();
 
         if(isEmpty) throw new RuntimeException("This requestItemId: " + requestItemId + " not found");
 
-        return afTypeOptional.get();
+        return requestItemOptional.get();
     }
 
     public AFRequestItem addRequestItem(AFRequestItem afRequestItem) {

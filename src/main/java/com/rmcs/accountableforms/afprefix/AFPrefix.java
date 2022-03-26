@@ -1,5 +1,7 @@
 package com.rmcs.accountableforms.afprefix;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -26,6 +28,7 @@ public class AFPrefix {
         this.id = id;
     }
 
+    @JsonValue
     public String getName() {
         return name;
     }

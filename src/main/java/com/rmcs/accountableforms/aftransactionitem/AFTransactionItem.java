@@ -1,13 +1,10 @@
-package com.rmcs.accountableforms.afrequestitem;
+package com.rmcs.accountableforms.aftransactionitem;
 
-
-
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.rmcs.accountableforms.afpurchaseitementry.AFPurchaseItemEntry;
-import com.rmcs.accountableforms.afrequesthistory.AFRequestHistory;
+import com.rmcs.accountableforms.afrequestitem.AFRequestItem;
+import com.rmcs.accountableforms.aftranasctionhistory.AFTransactionHistory;
 import com.rmcs.accountableforms.aftransactionstatus.AFTransactionStatus;
 import com.rmcs.accountableforms.aftype.AFType;
-import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -17,16 +14,18 @@ import java.util.UUID;
 
 @Entity
 @Table
-public class AFRequestItem {
+public class AFTransactionItem {
 
     @Id
     @GeneratedValue
-    @Type(type="org.hibernate.type.UUIDCharType")
     private UUID id;
+
+    @OneToOne
+    private AFRequestItem requestItem;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(nullable = false)
-    private AFRequestHistory requestHistory;
+    private AFTransactionHistory transactionHistory;
 
     @OneToOne
     @NotNull
@@ -43,15 +42,24 @@ public class AFRequestItem {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private AFPurchaseItemEntry itemEntry;
 
-    public AFRequestItem(AFRequestHistory requestHistory, AFType type, AFTransactionStatus status, Integer quantity, AFPurchaseItemEntry itemEntry) {
-        this.requestHistory = requestHistory;
+    public AFTransactionItem() {}
+
+    public AFTransactionItem(AFRequestItem requestItem,
+                             AFTransactionHistory transactionHistory,
+                             AFType type,
+                             AFTransactionStatus status,
+                             Integer quantity,
+                             AFPurchaseItemEntry itemEntry) {
+
+        this.requestItem = requestItem;
+        this.transactionHistory = transactionHistory;
         this.type = type;
         this.status = status;
         this.quantity = quantity;
         this.itemEntry = itemEntry;
     }
 
-    public AFRequestItem(String id) {
+    public AFTransactionItem(String id) {
         this.id = UUID.fromString(id);
     }
 
@@ -63,8 +71,6 @@ public class AFRequestItem {
         this.itemEntry = itemEntry;
     }
 
-    public AFRequestItem() {}
-
     public UUID getId() {
         return id;
     }
@@ -73,25 +79,28 @@ public class AFRequestItem {
         this.id = id;
     }
 
-    public AFRequestHistory getRequestHistory() {
-        return requestHistory;
+    public AFRequestItem getRequestItem() {
+        return requestItem;
     }
 
-    @JsonGetter("requestHistory")
-    public UUID getRequestHistoryID(){
-        return  requestHistory.getId();
+    public void setRequestItem(AFRequestItem requestItem) {
+        this.requestItem = requestItem;
     }
 
-    public void setRequestHistory(AFRequestHistory requestHistory) {
-        this.requestHistory = requestHistory;
+    public AFTransactionHistory getTransactionHistory() {
+        return transactionHistory;
+    }
+
+    public void setTransactionHistory(AFTransactionHistory transactionHistory) {
+        this.transactionHistory = transactionHistory;
     }
 
     public AFType getType() {
         return type;
     }
 
-    public void setType(AFType afType) {
-        this.type = afType;
+    public void setType(AFType type) {
+        this.type = type;
     }
 
     public AFTransactionStatus getStatus() {
@@ -110,16 +119,15 @@ public class AFRequestItem {
         this.quantity = quantity;
     }
 
-
     @Override
     public String toString() {
-        return "AFRequestItem{" +
+        return "AFTransactionItem{" +
                 "id=" + id +
-                ", requestHistory=" + requestHistory +
+                ", requestItem=" + requestItem +
+                ", transactionHistory=" + transactionHistory +
                 ", type=" + type +
                 ", status=" + status +
                 ", quantity=" + quantity +
-                ", itemEntry=" + itemEntry +
                 '}';
     }
 }

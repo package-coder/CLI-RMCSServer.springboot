@@ -1,28 +1,30 @@
-package com.rmcs.accountableforms.aftransactionstatus;
+package com.rmcs.accountableforms.afprefix;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.rmcs.accountableforms.afstate.AFStateEnum;
+import com.rmcs.accountableforms.aftransactiontype.AFTransactionTypeEnum;
 
 import java.util.stream.Stream;
 
-public enum AFTransactionStatusEnum {
-    PENDING("STATUS_PENDING", "PENDING"),
-    CANCELLED("STATUS_CANCELLED", "CANCELLED"),
-    COMPLETED("STATUS_COMPLETED", "COMPLETED");
+public enum AFPrefixEnum {
+    REQUEST("PREFIX_REQUEST", "RIS"),
+    TRANSACTION("PREFIX_TRANSACTION", "IRAF");
 
     private final String id;
     private final String name;
 
-    AFTransactionStatusEnum(String id, String name) {
+
+    AFPrefixEnum(String id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    public static AFTransactionStatusEnum of(String id){
+    public static AFPrefixEnum of(String id){
 
         //Find the id to the current enum values
-        return Stream.of(AFTransactionStatusEnum.values())
-                .filter(targetEnum -> targetEnum.id.equals(id.toUpperCase()))
+        return Stream.of(AFPrefixEnum.values())
+                .filter(targetEnum -> targetEnum.id.equals(id))
                 .findFirst()
                 .orElse(null);
     }

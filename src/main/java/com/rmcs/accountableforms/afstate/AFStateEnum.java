@@ -6,16 +6,18 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.stream.Stream;
 
 public enum AFStateEnum {
-    ISSUED("STATE_ISSUED"),
-    OPEN("STATE_OPEN");
+    ISSUED("STATE_ISSUED", "ISSUED"),
+    OPEN("STATE_OPEN", "OPEN");
 
     private final String id;
+    private final String name;
 
-    AFStateEnum(String id) {
+
+    AFStateEnum(String id, String name) {
         this.id = id;
+        this.name = name;
     }
 
-    @JsonCreator
     public static AFStateEnum of(String id){
 
         //Find the id to the current enum values
@@ -25,8 +27,11 @@ public enum AFStateEnum {
                 .orElse(null);
     }
 
-    @JsonValue
     public String getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
     }
 }

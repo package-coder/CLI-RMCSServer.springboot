@@ -1,21 +1,17 @@
 package com.rmcs.accountableforms.afrequesthistory;
 
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rmcs.account.user.User;
 import com.rmcs.accountableforms.afprefix.AFPrefix;
 import com.rmcs.accountableforms.afrequestitem.AFRequestItem;
 import com.rmcs.accountableforms.aftransactionstatus.AFTransactionStatus;
 import com.rmcs.accountableforms.aftransactiontype.AFTransactionType;
-import com.sun.istack.NotNull;
 import org.hibernate.annotations.Type;
-import org.springframework.lang.NonNull;
-
 import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,8 +24,8 @@ public class AFRequestHistory {
     @Type(type="org.hibernate.type.UUIDCharType")
     private UUID id;
 
-    @OneToOne
 //TODO    @NotNull
+    @OneToOne
     private User requester;
 
     @OneToOne
@@ -38,23 +34,27 @@ public class AFRequestHistory {
     @OneToOne
     private AFTransactionStatus transactionStatus;
 
-    @OneToOne
     @NotNull
+    @OneToOne
     private AFTransactionType transactionType;
+
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer controlNumber;
 
     @NotNull
     private LocalDate requestDate = LocalDate.now();
 
+    @Valid
+    @NotNull
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<AFRequestItem> requestItems;
 
-    public AFRequestHistory(
-            User requester,
-            AFPrefix prefix,
-            AFTransactionStatus transactionStatus,
-            AFTransactionType transactionType,
-            LocalDate requestDate,
-            List<AFRequestItem> requestItems) {
+    public AFRequestHistory(User requester,
+                            AFPrefix prefix,
+                            AFTransactionStatus transactionStatus,
+                            AFTransactionType transactionType,
+                            LocalDate requestDate,
+                            List<AFRequestItem> requestItems) {
 
         this.requester = requester;
         this.prefix = prefix;
@@ -65,6 +65,14 @@ public class AFRequestHistory {
     }
 
     public AFRequestHistory() {}
+
+    public Integer getControlNumber() {
+        return controlNumber;
+    }
+
+    public void setControlNumber(Integer controlNumber) {
+        this.controlNumber = controlNumber;
+    }
 
     public UUID getId() {
         return id;

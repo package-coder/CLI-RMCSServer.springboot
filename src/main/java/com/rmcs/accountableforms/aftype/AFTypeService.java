@@ -22,7 +22,7 @@ public class AFTypeService {
     public AFType addType(AFType afType){
         boolean exists = repository.existsById(afType.getId());
 
-        if(exists)  throw new RuntimeException("This id: " + afType.getId() + " exists already");
+        if(exists)  throw new IllegalArgumentException("This id: " + afType.getId() + " exists already");
 
         return repository.save(afType);
     }
@@ -31,7 +31,7 @@ public class AFTypeService {
         Optional<AFType> afTypeOptional = repository.findById(typeId);
         boolean isEmpty = afTypeOptional.isEmpty();
 
-        if(isEmpty) throw new RuntimeException("This id: " + typeId + " not found");
+        if(isEmpty) throw new IllegalArgumentException("This id: " + typeId + " not found");
 
         return afTypeOptional.get();
     }

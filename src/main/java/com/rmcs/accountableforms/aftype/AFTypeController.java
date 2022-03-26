@@ -24,7 +24,6 @@ public class AFTypeController {
 
     @PostMapping
     public AFType addType(@RequestBody AFType afType){
-        System.out.println(afType);
         return service.addType(afType);
     }
 

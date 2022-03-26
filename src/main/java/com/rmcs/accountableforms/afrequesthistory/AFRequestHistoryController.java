@@ -3,6 +3,8 @@ package com.rmcs.accountableforms.afrequesthistory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +31,7 @@ public class AFRequestHistoryController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public AFRequestHistory addRequestHistory(@RequestBody AFRequestHistory requestHistory){
+    public AFRequestHistory addRequestHistory(@RequestBody @Valid AFRequestHistory requestHistory){
         return service.addRequestHistory(requestHistory);
     }
 }
