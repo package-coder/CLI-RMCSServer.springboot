@@ -12,6 +12,7 @@ import com.rmcs.accountableforms.aftransactionstatus.AFTransactionStatusEnum;
 import com.rmcs.accountableforms.aftransactionstatus.AFTransactionStatusRepository;
 import com.rmcs.accountableforms.aftransactiontype.AFTransactionType;
 import com.rmcs.accountableforms.aftransactiontype.AFTransactionTypeEnum;
+import com.rmcs.accountableforms.aftransactiontype.AFTransactionTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,17 +26,20 @@ public class AFTransactionHistoryService {
     private final AFTransactionStatusRepository transactionStatusRepository;
     private final AFPrefixRepository prefixRepository;
     private final AFRequestHistoryRepository requestHistoryRepository;
+    private final AFTransactionTypeRepository transactionTypeRepository;
 
     @Autowired
     public AFTransactionHistoryService(AFTransactionHistoryRepository transactionHistoryRepository,
                                        AFTransactionStatusRepository transactionStatusRepository,
                                        AFPrefixRepository prefixRepository,
-                                       AFRequestHistoryRepository requestHistoryRepository) {
+                                       AFRequestHistoryRepository requestHistoryRepository,
+                                       AFTransactionTypeRepository transactionTypeRepository) {
 
         this.transactionHistoryRepository = transactionHistoryRepository;
         this.transactionStatusRepository = transactionStatusRepository;
         this.prefixRepository = prefixRepository;
         this.requestHistoryRepository = requestHistoryRepository;
+        this.transactionTypeRepository = transactionTypeRepository;
     }
 
     public List<AFTransactionHistory> getAllTransactionHistory(){
@@ -43,17 +47,11 @@ public class AFTransactionHistoryService {
     }
 
     public AFTransactionHistory getTransactionHistory(UUID id){
-        Optional<AFTransactionHistory> transactionHistoryOptional = transactionHistoryRepository.findById(id);
-        boolean isObjectNotExist = transactionHistoryOptional.isEmpty();
-
-        if(isObjectNotExist){
-            throw new IllegalArgumentException("This transactionHistory: " + id + " not found");
-        }
-
-        return transactionHistoryOptional.get();
+        return transactionHistoryRepository.findById(id).get();
     }
 
     public AFTransactionHistory addTransactionHistory(AFTransactionHistory transactionHistory){
+
         var requestHistory = getRequestHistory(transactionHistory);
 
         if(requestHistory == null && transactionHistory.getTransactionType() == null )
@@ -65,12 +63,10 @@ public class AFTransactionHistoryService {
 
         var transactionType = getTransactionType(transactionHistory, requestHistory);
         var transactionItems = getTransactionItems(transactionHistory, requestHistory);
-        var transactionStatus = getStatusByEnum(AFTransactionStatusEnum.COMPLETED);
 
         transactionHistory.setTransactionItems(transactionItems);
         transactionHistory.setTransactionStatus(transactionStatus);
         transactionHistory.setTransactionType(transactionType);
-        transactionHistory.setPrefix(getPrefixByEnum(AFPrefixEnum.TRANSACTION));
 
         for (var transactionItem : transactionItems) {
 
@@ -86,18 +82,8 @@ public class AFTransactionHistoryService {
                 transactionItem.getRequestItem().setStatus(transactionStatus);
         }
 
-        System.out.println(transactionHistory.getTransactionType());
 
         return transactionHistoryRepository.save(transactionHistory);
-    }
-
-
-    private AFTransactionStatus getStatusByEnum(AFTransactionStatusEnum statusEnum){
-        return transactionStatusRepository.findById(statusEnum.getId()).get();
-    }
-
-    private AFPrefix getPrefixByEnum(AFPrefixEnum prefixEnum){
-        return prefixRepository.findById(prefixEnum.getId()).get();
     }
 
     private List<AFTransactionItem> getTransactionItems(AFTransactionHistory transactionHistory, AFRequestHistory requestHistory){
@@ -120,12 +106,13 @@ public class AFTransactionHistoryService {
 
     private AFTransactionType getTransactionType(AFTransactionHistory transactionHistory, AFRequestHistory requestHistory){
 
-        var transactionType = (requestHistory == null) ?
+        var currentType = (requestHistory == null) ?
                 transactionHistory.getTransactionType() :
                 requestHistory.getTransactionType();
 
-        var transactionTypeId = AFTransactionTypeEnum.of(transactionType.getId()).getId();
-        transactionType.setId(transactionTypeId);
+
+        var transactionType = transactionTypeRepository.findByName(currentType.getId()).get();
+        transactionHistory.setTransactionType(transactionType);
         return transactionType;
     }
 

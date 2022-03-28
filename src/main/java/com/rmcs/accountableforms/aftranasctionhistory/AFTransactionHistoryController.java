@@ -31,6 +31,7 @@ public class AFTransactionHistoryController {
     @PostMapping
     public AFTransactionHistory addTransactionHistory(@RequestBody @Valid AFTransactionHistory transactionHistory){
         AFTransactionHistory afTransactionHistory = service.addTransactionHistory(transactionHistory);
+        System.out.println(afTransactionHistory.getTransactionType());
         return afTransactionHistory;
     }
 }
