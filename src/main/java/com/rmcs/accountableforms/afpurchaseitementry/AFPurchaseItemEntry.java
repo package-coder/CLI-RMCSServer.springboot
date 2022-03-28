@@ -3,6 +3,7 @@ package com.rmcs.accountableforms.afpurchaseitementry;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.rmcs.accountableforms.afrequestitem.AFRequestItem;
 import com.rmcs.accountableforms.aftransactionitem.AFTransactionItem;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -16,6 +17,7 @@ public class AFPurchaseItemEntry {
 
     @Id
     @GeneratedValue
+    @Type(type="org.hibernate.type.UUIDCharType")
     private UUID id;
 
     @OneToOne

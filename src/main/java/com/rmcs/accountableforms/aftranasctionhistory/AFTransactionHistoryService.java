@@ -3,6 +3,8 @@ package com.rmcs.accountableforms.aftranasctionhistory;
 import com.rmcs.accountableforms.afprefix.AFPrefix;
 import com.rmcs.accountableforms.afprefix.AFPrefixEnum;
 import com.rmcs.accountableforms.afprefix.AFPrefixRepository;
+import com.rmcs.accountableforms.afrequesthistory.AFRequestHistory;
+import com.rmcs.accountableforms.afrequesthistory.AFRequestHistoryRepository;
 import com.rmcs.accountableforms.afrequestitem.AFRequestItem;
 import com.rmcs.accountableforms.aftransactionitem.AFTransactionItem;
 import com.rmcs.accountableforms.aftransactionstatus.AFTransactionStatus;
@@ -22,15 +24,18 @@ public class AFTransactionHistoryService {
     private final AFTransactionHistoryRepository transactionHistoryRepository;
     private final AFTransactionStatusRepository transactionStatusRepository;
     private final AFPrefixRepository prefixRepository;
+    private final AFRequestHistoryRepository requestHistoryRepository;
 
     @Autowired
     public AFTransactionHistoryService(AFTransactionHistoryRepository transactionHistoryRepository,
                                        AFTransactionStatusRepository transactionStatusRepository,
-                                       AFPrefixRepository prefixRepository) {
+                                       AFPrefixRepository prefixRepository,
+                                       AFRequestHistoryRepository requestHistoryRepository) {
 
         this.transactionHistoryRepository = transactionHistoryRepository;
         this.transactionStatusRepository = transactionStatusRepository;
         this.prefixRepository = prefixRepository;
+        this.requestHistoryRepository = requestHistoryRepository;
     }
 
     public List<AFTransactionHistory> getAllTransactionHistory(){
@@ -49,8 +54,7 @@ public class AFTransactionHistoryService {
     }
 
     public AFTransactionHistory addTransactionHistory(AFTransactionHistory transactionHistory){
-        System.out.println(transactionHistory);
-        var requestHistory = transactionHistory.getRequestHistory();
+        var requestHistory = getRequestHistory(transactionHistory);
 
         if(requestHistory == null && transactionHistory.getTransactionType() == null )
             throw new IllegalArgumentException("AFTransactionType & AFRequestHistory must not same null");
@@ -59,9 +63,8 @@ public class AFTransactionHistoryService {
         if(requestHistory != null && transactionHistory.getApprovedRequestItems() == null)
             throw new IllegalArgumentException("ApprovedRequestItems(List of UUIDs) must not null");
 
-
-        var transactionType = getTransactionType(transactionHistory);
-        var transactionItems = getTransactionItems(transactionHistory);
+        var transactionType = getTransactionType(transactionHistory, requestHistory);
+        var transactionItems = getTransactionItems(transactionHistory, requestHistory);
         var transactionStatus = getStatusByEnum(AFTransactionStatusEnum.COMPLETED);
 
         transactionHistory.setTransactionItems(transactionItems);
@@ -79,9 +82,11 @@ public class AFTransactionHistoryService {
             transactionItem.setStatus(transactionStatus);
             transactionItem.setTransactionHistory(transactionHistory);
 
-            if(transactionHistory.getRequestHistory() != null)
+            if(requestHistory != null)
                 transactionItem.getRequestItem().setStatus(transactionStatus);
         }
+
+        System.out.println(transactionHistory.getTransactionType());
 
         return transactionHistoryRepository.save(transactionHistory);
     }
@@ -95,11 +100,11 @@ public class AFTransactionHistoryService {
         return prefixRepository.findById(prefixEnum.getId()).get();
     }
 
-    private List<AFTransactionItem> getTransactionItems(AFTransactionHistory transactionHistory){
-        if(transactionHistory.getRequestHistory() == null)
+    private List<AFTransactionItem> getTransactionItems(AFTransactionHistory transactionHistory, AFRequestHistory requestHistory){
+        if(requestHistory == null)
             return transactionHistory.getTransactionItems();
 
-        var requestItems = transactionHistory.getRequestHistory().getRequestItems();
+        var requestItems = requestHistory.getRequestItems();
         var approvedRequestItems = transactionHistory.getApprovedRequestItems();
 
         return requestItems.stream()
@@ -113,11 +118,22 @@ public class AFTransactionHistoryService {
                 .toList();
     }
 
-    private AFTransactionType getTransactionType(AFTransactionHistory transactionHistory){
-        if(transactionHistory.getRequestHistory() == null)
-            return transactionHistory.getTransactionType();
+    private AFTransactionType getTransactionType(AFTransactionHistory transactionHistory, AFRequestHistory requestHistory){
 
-        return transactionHistory.getRequestHistory().getTransactionType();
+        var transactionType = (requestHistory == null) ?
+                transactionHistory.getTransactionType() :
+                requestHistory.getTransactionType();
+
+        var transactionTypeId = AFTransactionTypeEnum.of(transactionType.getId()).getId();
+        transactionType.setId(transactionTypeId);
+        return transactionType;
+    }
+
+    private AFRequestHistory getRequestHistory(AFTransactionHistory transactionHistory){
+        if(transactionHistory.getRequestHistory() == null)
+            return null;
+
+        return requestHistoryRepository.findById(transactionHistory.getRequestHistory().getId()).orElse(null);
     }
 
     private boolean requestExistInApprovedList(List<AFRequestItem> approvedRequestItems, AFRequestItem requestItem){

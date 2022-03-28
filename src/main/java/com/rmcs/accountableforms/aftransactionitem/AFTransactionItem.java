@@ -1,10 +1,12 @@
 package com.rmcs.accountableforms.aftransactionitem;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.rmcs.accountableforms.afpurchaseitementry.AFPurchaseItemEntry;
 import com.rmcs.accountableforms.afrequestitem.AFRequestItem;
 import com.rmcs.accountableforms.aftranasctionhistory.AFTransactionHistory;
 import com.rmcs.accountableforms.aftransactionstatus.AFTransactionStatus;
 import com.rmcs.accountableforms.aftype.AFType;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -18,6 +20,7 @@ public class AFTransactionItem {
 
     @Id
     @GeneratedValue
+    @Type(type="org.hibernate.type.UUIDCharType")
     private UUID id;
 
     @OneToOne
@@ -79,12 +82,25 @@ public class AFTransactionItem {
         this.id = id;
     }
 
+    @JsonGetter("requestItem")
+    public UUID getRequestItemId(){
+        if(requestItem == null)
+            return null;
+
+        return requestItem.getId();
+    }
+
     public AFRequestItem getRequestItem() {
         return requestItem;
     }
 
     public void setRequestItem(AFRequestItem requestItem) {
         this.requestItem = requestItem;
+    }
+
+    @JsonGetter("transactionHistory")
+    public UUID getTransactionHistoryId(){
+        return transactionHistory.getId();
     }
 
     public AFTransactionHistory getTransactionHistory() {
@@ -128,6 +144,7 @@ public class AFTransactionItem {
                 ", type=" + type +
                 ", status=" + status +
                 ", quantity=" + quantity +
+                ", itemEntry=" + itemEntry +
                 '}';
     }
 }
